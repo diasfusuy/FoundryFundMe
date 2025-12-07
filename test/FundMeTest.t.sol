@@ -7,10 +7,16 @@ import {FundMe} from "../src/FundMe.sol";
 contract FundMeTest is Test {
   FundMe fundMe;
   function setUp() external{
+    // us => calling FundMeTest => calls the new FundMe
     fundMe = new FundMe();
   }
 
   function testMinimunDollarIsFive() public {
     assertEq (fundMe.MINIMUM_USD(), 5e18);
   }
+
+  function testOwnerIsMsgSender() public {
+    assertEq(fundMe.i_owner(), address(this));
+  }
 }
+

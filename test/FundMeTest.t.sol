@@ -3,17 +3,23 @@ pragma solidity ^0.8.18;
 
 import {Test, console} from "forge-std/Test.sol";
 import {FundMe} from "../src/FundMe.sol";
-import {DeployFundMe} from "../script/DeployFundMe.s.sol";
+// import {DeployFundMe} from "../script/DeployFundMe.s.sol";
+import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
+import {MockV3Aggregator} from "./mocks/MockV3Aggregator.sol";
 contract FundMeTest is Test {
   FundMe fundMe;
 
   address USER = makeAddr("user");
   uint256 constant SEND_VALUE = 0.1 ether;
   uint256 constant STARTING_BALANCE = 10 ether;
-  function setUp() external{
-    // fundMe = new FundMe(0x694AA1769357215DE4FAC081bf1f309aDC325306);
-    DeployFundMe deployFundMe = new DeployFundMe();
-    fundMe = deployFundMe.deployForTest();
+  uint8 constant DECIMALS = 8;
+  int256 constant INITIAL_PRICE = 2000e8;
+
+  MockV3Aggregator mockPriceFeed;
+
+  function setUp() external {
+    mockPriceFeed = new MockV3Aggregator(DECIMALS, INITIAL_PRICE);
+    fundMe = new FundMe(address(mockPriceFeed));
     vm.deal(USER, STARTING_BALANCE);
   }
 
@@ -21,9 +27,9 @@ contract FundMeTest is Test {
     assertEq (fundMe.MINIMUM_USD(), 5e18);
   }
 
-  // function testOwnerIsMsgSender() public {
-  //   assertEq(fundMe.i_owner(), address(this));
-  // }
+  function testOwnerIsMsgSender() public {
+    assertEq(fundMe.getOwner(), address(this));
+  }
 
 // What can we do to work with addresses outside our system?
 // 1. Unit 
@@ -54,6 +60,45 @@ contract FundMeTest is Test {
    assertEq(amountFunded, SEND_VALUE);
   }
 
-  
+  function testAddsFunderToArrayOfFunders() public {
+    vm.prank(USER);
+    fundMe.fund {value: SEND_VALUE}();
+
+    address funder = fundMe.getFunder(0);
+    assertEq(funder, USER);
+  }
+ 
+  modifier funded() {
+    vm.prank(USER);
+    fundMe.fund{value: SEND_VALUE}();
+    _;
+  }
+
+  function testOnlyOwnerCnaWithdraw() public funded {
+    vm.prank(USER);
+    vm.expectRevert();
+    fundMe.withdraw();
+  } 
+
+  function testWithdrawWithASingleFunder() public funded {
+    // Arrange
+    uint256 startingOwnerBalance = fundMe.getOwner().balance;
+    uint256 startingFundMeBalance = address(fundMe).balance;
+
+    // Act
+    vm.prank(fundMe.getOwner());
+    fundMe.withdraw();
+
+    // Assert
+    uint256 endingOwnerBalance = fundMe.getOwner().balance;
+    uint256 endingFndMeBalance = address(fundMe).balance;
+    assertEq(endingFndMeBalance, 0);
+    assertEq(
+      startingFundMeBalance + startingOwnerBalance,
+      endingOwnerBalance
+    );
+  }
+
+  receive() external payable {}
 }
 

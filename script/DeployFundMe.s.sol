@@ -13,12 +13,14 @@ contract DeployFundMe is Script {
 
         // After startbroadcast, it is a real transaction
         vm.startBroadcast();
-        FundMe fundMe = new FundMe(0x694AA1769357215DE4FAC081bf1f309aDC325306);
+        FundMe fundMe = new FundMe(ethUsdPriceFeed);
         vm.stopBroadcast();
         return fundMe;
     }
 
     function deployForTest() external returns(FundMe) {
-        return new FundMe(0x694AA1769357215DE4FAC081bf1f309aDC325306);
+        HelperConfig helperConfig = new HelperConfig();
+        address ethUsdPriceFeed = helperConfig.activeNetworkConfig();
+        return new FundMe(ethUsdPriceFeed);
     }
 }

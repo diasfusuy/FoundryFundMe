@@ -14,6 +14,7 @@ contract FundMeTest is Test {
   uint256 constant STARTING_BALANCE = 10 ether;
   uint8 constant DECIMALS = 8;
   int256 constant INITIAL_PRICE = 2000e8;
+  // uint256 constant GAS_PRICE = 1;
 
   MockV3Aggregator mockPriceFeed;
 
@@ -86,8 +87,15 @@ contract FundMeTest is Test {
     uint256 startingFundMeBalance = address(fundMe).balance;
 
     // Act
+    // Here we could measure gas used
+    // uint256 gasStart = gasleft(); 
+    // vm.txGasPrice(GAS_PRICE);
     vm.prank(fundMe.getOwner());
     fundMe.withdraw();
+
+    // uint256 gasEnd = gasleft();
+    // uint256 gasUsed = (gasStart - gasEnd) * tx.gasprice;
+    // console.log(gasUsed);
 
     // Assert
     uint256 endingOwnerBalance = fundMe.getOwner().balance;

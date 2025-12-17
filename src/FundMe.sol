@@ -36,7 +36,7 @@ contract FundMe {
     }
 
     // Functions Order:
-    //// constructor 
+    //// constructor
     //// receive
     //// fallback
     //// external
@@ -61,11 +61,7 @@ contract FundMe {
     // aderyn-ignore-next-line(centralization-risk,unused-public-function,state-change-without-event))
     function withdraw() public onlyOwner {
         // aderyn-ignore-next-line(storage-array-length-not-cached,costly-loop)
-        for (
-            uint256 funderIndex = 0; 
-            funderIndex < s_funders.length; 
-            funderIndex++
-        ) {
+        for (uint256 funderIndex = 0; funderIndex < s_funders.length; funderIndex++) {
             address funder = s_funders[funderIndex];
             s_addressToAmountFunded[funder] = 0;
         }
@@ -79,11 +75,7 @@ contract FundMe {
     function cheaperWithdraw() public onlyOwner {
         uint256 fundersLength = s_funders.length;
         // mappings can't be in memory, sorry!
-        for (
-            uint256 funderIndex = 0; 
-            funderIndex < fundersLength; 
-            funderIndex++
-        ) {
+        for (uint256 funderIndex = 0; funderIndex < fundersLength; funderIndex++) {
             address funder = s_funders[funderIndex];
             s_addressToAmountFunded[funder] = 0;
         }

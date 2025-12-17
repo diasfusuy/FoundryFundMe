@@ -9,27 +9,26 @@ import {MockV3Aggregator} from "../mocks/MockV3Aggregator.sol";
 import {FundFundMe, WithdrawFundMe} from "../../script/Interactions.s.sol";
 
 contract InteractionsTest is Test {
-  FundMe fundMe;
+    FundMe fundMe;
 
-  address USER = makeAddr("user");
-  uint256 constant SEND_VALUE = 0.1 ether;
-  uint256 constant STARTING_BALANCE = 10 ether;
-  uint256 constant GAS_PRICE = 1;
-  
+    address USER = makeAddr("user");
+    uint256 constant SEND_VALUE = 0.1 ether;
+    uint256 constant STARTING_BALANCE = 10 ether;
+    uint256 constant GAS_PRICE = 1;
 
-  function setUp() external {
-    DeployFundMe deploy = new DeployFundMe();
-    fundMe = deploy.run();
-    vm.deal(USER, STARTING_BALANCE);
-  }
+    function setUp() external {
+        DeployFundMe deploy = new DeployFundMe();
+        fundMe = deploy.run();
+        vm.deal(USER, STARTING_BALANCE);
+    }
 
-  function testUserCanFundInteractions() public {
-    FundFundMe fundFundMe = new FundFundMe();
-    fundFundMe.fundFundMe(address(fundMe));
+    function testUserCanFundInteractions() public {
+        FundFundMe fundFundMe = new FundFundMe();
+        fundFundMe.fundFundMe(address(fundMe));
 
-    WithdrawFundMe withdrawFundMe = new WithdrawFundMe();
-    withdrawFundMe.withdrawFundMe(address(fundMe));
+        WithdrawFundMe withdrawFundMe = new WithdrawFundMe();
+        withdrawFundMe.withdrawFundMe(address(fundMe));
 
-    assert(address(fundMe).balance == 0);
-  }
+        assert(address(fundMe).balance == 0);
+    }
 }
